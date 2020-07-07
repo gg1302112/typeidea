@@ -15,10 +15,12 @@ class CategoryOwnerFilter(admin.SimpleListFilter):
         return Category.objects.filter(owner=request.user).values_list('id', 'name')
 
     def queryset(self, request, queryset):
+        print(self.value())
         category_id = self.value()
         if category_id:
             return queryset.filter(category_id=self.value())
         return queryset
+
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -82,3 +84,12 @@ class PostAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         obj.owner = request.user
         return super(PostAdmin, self).save_model(request, obj, form, change)
+
+    def get_queryset(self, request):
+        print(request.user.username)
+        print(type(request.user.username))
+        qs = super(PostAdmin, self).get_queryset(request)
+        if request.user.username == "admin":
+            return qs
+        else:
+            return qs.filter(owner=request.user)
